@@ -12,6 +12,7 @@ import {
 import { format, isPast, isToday } from 'date-fns';
 import type { Todo } from '../../types/Todo';
 import { useTodo } from '../../hooks/useTodo';
+import { parseDateFromStorage } from '../../utils/dateUtils';
 
 interface TodoItemProps {
   todo: Todo;
@@ -25,7 +26,9 @@ export const TodoItem: React.FC<TodoItemProps> = ({ todo, onEditClick }) => {
   const getDueDateDisplay = (dueDate?: string) => {
     if (!dueDate) return null;
 
-    const date = new Date(dueDate);
+    const date = parseDateFromStorage(dueDate);
+    if (!date) return null; // Handle invalid dates gracefully
+
     const formattedDate = format(date, 'PP'); // e.g., "Jan 1, 2024"
 
     let color: 'default' | 'error' | 'warning' | 'success' = 'default';

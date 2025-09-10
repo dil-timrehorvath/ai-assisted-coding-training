@@ -12,6 +12,7 @@ import {
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { useTodo } from '../../hooks/useTodo';
+import { parseDateFromStorage } from '../../utils/dateUtils';
 // Todo type is used in the context, no need to import it directly here
 
 interface TodoModalProps {
@@ -47,7 +48,7 @@ export const TodoModal: React.FC<TodoModalProps> = ({
         setTitle(initialValues.title);
         setDescription(initialValues.description);
         setCompleted(initialValues.completed);
-        setDueDate(initialValues.dueDate ? new Date(initialValues.dueDate) : null);
+        setDueDate(parseDateFromStorage(initialValues.dueDate));
       } else {
         setTitle('');
         setDescription('');
