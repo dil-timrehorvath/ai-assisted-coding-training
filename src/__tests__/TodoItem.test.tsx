@@ -100,4 +100,35 @@ describe('TodoItem Component', () => {
 
     expect(mockOnEditClick).toHaveBeenCalledWith(mockTodo);
   });
+
+  it('displays due date when present', () => {
+    const todoWithDueDate = {
+      ...mockTodo,
+      dueDate: '2024-12-31T00:00:00.000Z',
+    };
+
+    render(<TodoItem todo={todoWithDueDate} onEditClick={mockOnEditClick} />);
+
+    expect(screen.getByText(/Dec 31, 2024/)).toBeInTheDocument();
+  });
+
+  it('shows overdue indicator for past due dates', () => {
+    const overdueTodo = {
+      ...mockTodo,
+      dueDate: '2020-01-01T00:00:00.000Z',
+    };
+
+    render(<TodoItem todo={overdueTodo} onEditClick={mockOnEditClick} />);
+
+    expect(screen.getByText(/overdue/i)).toBeInTheDocument();
+  });
+
+  it('does not display due date chip when dueDate is not provided', () => {
+    render(<TodoItem todo={mockTodo} onEditClick={mockOnEditClick} />);
+
+    // Should not find any date-related text
+    expect(screen.queryByText(/\d{4}/)).not.toBeInTheDocument(); // No year pattern
+    expect(screen.queryByText(/overdue/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/due today/i)).not.toBeInTheDocument();
+  });
 });

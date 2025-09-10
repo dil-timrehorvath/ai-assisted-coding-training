@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react';
+import { renderHook, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { TodoProvider } from '../contexts/TodoContext';
 import { useTodo } from '../hooks/useTodo';
@@ -111,5 +112,47 @@ describe('TodoContext', () => {
     await user.click(screen.getByTestId(`delete-${todoId}`));
 
     expect(screen.getByTestId('todo-count').textContent).toBe('0');
+  });
+
+  it('should create todo with due date', () => {
+    const { result } = renderHook(() => useTodo(), { wrapper: TodoProvider });
+    const dueDate = '2024-12-31T23:59:59.999Z';
+
+    act(() => {
+      result.current.addTodo('Test Todo', 'Test Description', dueDate);
+    });
+
+    expect(result.current.todos).toHaveLength(1);
+    expect(result.current.todos[0].dueDate).toBe(dueDate);
+  });
+
+  it('should create todo without due date', () => {
+    const { result } = renderHook(() => useTodo(), { wrapper: TodoProvider });
+
+    act(() => {
+      result.current.addTodo('Test Todo', 'Test Description');
+    });
+
+    expect(result.current.todos).toHaveLength(1);
+    expect(result.current.todos[0].dueDate).toBeUndefined();
+  });
+
+  it('should edit todo with due date', () => {
+    const { result } = renderHook(() => useTodo(), { wrapper: TodoProvider });
+    const dueDate = '2024-12-31T23:59:59.999Z';
+
+    // Add a todo first
+    act(() => {
+      result.current.addTodo('Test Todo', 'Test Description');
+    });
+
+    const todoId = result.current.todos[0].id;
+
+    // Edit the todo to add due date
+    act(() => {
+      result.current.editTodo(todoId, { dueDate });
+    });
+
+    expect(result.current.todos[0].dueDate).toBe(dueDate);
   });
 });
