@@ -1,7 +1,18 @@
 import React from 'react';
-import { ListItem, ListItemText, IconButton, Checkbox, Divider, Typography } from '@mui/material';
+import {
+  ListItem,
+  ListItemText,
+  IconButton,
+  Checkbox,
+  Divider,
+  Typography,
+  Box,
+  Chip,
+} from '@mui/material';
+import { format, isPast, isToday } from 'date-fns';
 import type { Todo } from '../../types/Todo';
 import { useTodo } from '../../hooks/useTodo';
+import { parseDateFromStorage } from '../../utils/dateUtils';
 
 interface TodoItemProps {
   todo: Todo;
@@ -10,6 +21,29 @@ interface TodoItemProps {
 
 export const TodoItem: React.FC<TodoItemProps> = ({ todo, onEditClick }) => {
   const { toggleTodoCompletion, deleteTodo } = useTodo();
+
+  // Add due date display logic
+  const getDueDateDisplay = (dueDate?: string) => {
+    if (!dueDate) return null;
+
+    const date = parseDateFromStorage(dueDate);
+    if (!date) return null; // Handle invalid dates gracefully
+
+    const formattedDate = format(date, 'PP'); // e.g., "Jan 1, 2024"
+
+    let color: 'default' | 'error' | 'warning' | 'success' = 'default';
+    let label = formattedDate;
+
+    if (isPast(date) && !isToday(date)) {
+      color = 'error';
+      label = `Overdue: ${formattedDate}`;
+    } else if (isToday(date)) {
+      color = 'warning';
+      label = `Due Today: ${formattedDate}`;
+    }
+
+    return <Chip label={label} color={color} size="small" sx={{ ml: 1 }} />;
+  };
 
   return (
     <>
@@ -50,16 +84,19 @@ export const TodoItem: React.FC<TodoItemProps> = ({ todo, onEditClick }) => {
         <ListItemText
           disableTypography
           primary={
-            <Typography
-              variant="body1"
-              sx={{
-                textDecoration: todo.completed ? 'line-through' : 'none',
-                color: todo.completed ? 'text.secondary' : 'text.primary',
-                fontWeight: 500,
-              }}
-            >
-              {todo.title}
-            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
+              <Typography
+                variant="body1"
+                sx={{
+                  textDecoration: todo.completed ? 'line-through' : 'none',
+                  color: todo.completed ? 'text.secondary' : 'text.primary',
+                  fontWeight: 500,
+                }}
+              >
+                {todo.title}
+              </Typography>
+              {getDueDateDisplay(todo.dueDate)}
+            </Box>
           }
           secondary={
             <Typography
